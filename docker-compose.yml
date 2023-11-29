@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  historic:
+    build: .
+    platform: linux/arm64
+    env_file:
+      - .env
+    command: [ "./historic_events", "700000", "750000" ]
+
+  stream:
+    build: .
+    platform: linux/arm64
+    env_file:
+      - .env
+    command: [ "./stream_events" ]
