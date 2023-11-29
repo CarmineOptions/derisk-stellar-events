@@ -16,10 +16,17 @@ impl DatabaseConnector {
         let username = env::var("DB_USER").expect("Could not read \"DB_USER\"");
         let password = env::var("DB_PASSWORD").expect("Could not read \"DB_PASSWORD\"");
         let host = env::var("DB_HOST").expect("Could not read \"DB_HOST\"");
+        let port = env::var("DB_PORT").expect("Could not read \"DB_PORT\"");
 
-        DatabaseConnector::new(username, password, host, network)
+        DatabaseConnector::new(username, password, host, port, network)
     }
-    pub fn new(username: String, password: String, host: String, network: StellarNetwork) -> Self {
+    pub fn new(
+        username: String,
+        password: String,
+        host: String,
+        port: String,
+        network: StellarNetwork,
+    ) -> Self {
         let db_name = match network {
             StellarNetwork::Futurenet => "stellar-futurenet",
             StellarNetwork::Testnet => {
@@ -29,8 +36,10 @@ impl DatabaseConnector {
                 panic!("Mainnet not implemented yet")
             }
         };
-        let connection_string =
-            format!("postgres://{}:{}@{}/{}", username, password, host, db_name);
+        let connection_string = format!(
+            "postgres://{}:{}@{}:{}/{}",
+            username, password, host, port, db_name
+        );
         let connection = PgConnection::establish(&connection_string)
             .unwrap_or_else(|_| panic!("Error connecting to {}", connection_string));
 
