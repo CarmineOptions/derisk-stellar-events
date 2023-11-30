@@ -1,4 +1,4 @@
-use std::env;
+use std::{cmp::min, env};
 
 use derisk_stellar_events::{
     core::StellarNetwork, db::DatabaseConnector, historic_events::get_historic_events,
@@ -23,11 +23,21 @@ fn main() {
         std::process::exit(1);
     }
 
-    let events = get_historic_events(start, end);
-
     let mut db_connector = DatabaseConnector::from_env(StellarNetwork::Futurenet);
 
-    db_connector.create_batch_of_events(&events);
+    let chunk_size = 5000;
+    let mut current_start = start;
 
-    println!("Stored historic events from ledger {} to {}", start, end);
+    while current_start < end {
+        let current_end = min(current_start + chunk_size, end);
+        let events = get_historic_events(StellarNetwork::Futurenet, current_start, current_end);
+        db_connector.create_batch_of_events(&events);
+        println!(
+            "Stored historic events from ledger {} to {}",
+            current_start, current_end
+        );
+        current_start += chunk_size;
+    }
+
+    println!("Finished storing historic events {} - {}", start, end);
 }

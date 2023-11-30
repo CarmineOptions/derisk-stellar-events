@@ -6,7 +6,7 @@ services:
     platform: linux/arm64
     env_file:
       - .env
-    command: [ "./historic_events", "700000", "750000" ]
+    command: [ "./historic_events", "1050000", "1200000" ]
 
   stream:
     build: .

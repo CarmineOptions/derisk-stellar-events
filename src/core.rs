@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::schema::events;
 use diesel::prelude::*;
 use serde::Deserialize;
@@ -9,6 +11,16 @@ pub enum StellarNetwork {
     Futurenet,
     Testnet,
     Mainnet,
+}
+
+impl fmt::Display for StellarNetwork {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            StellarNetwork::Futurenet => write!(f, "stellar-futurenet"),
+            StellarNetwork::Testnet => write!(f, "stellar-testnet"),
+            StellarNetwork::Mainnet => write!(f, "stellar-mainnet"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Queryable, Insertable, Serialize, PartialEq, Selectable)]
@@ -56,7 +68,7 @@ pub fn construct_derisk_event(
 // StellarX pools
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct StellaxXPool {
+pub struct StellarXPool {
     pub id: String,
     #[serde(rename = "type")]
     pub type_field: String,

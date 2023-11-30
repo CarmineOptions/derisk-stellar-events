@@ -1,4 +1,4 @@
-use crate::core::{construct_derisk_event, DeriskEvent};
+use crate::core::{construct_derisk_event, DeriskEvent, StellarNetwork};
 use ingest::{BoundedRange, CaptiveCore, IngestionConfig, Range, SupportedNetwork};
 use stellar_xdr::next::{
     LedgerCloseMeta, LedgerCloseMetaV1, LedgerCloseMetaV2, TransactionMeta, TransactionMetaV3,
@@ -66,11 +66,17 @@ fn parse_soroban_events(
     }
 }
 
-pub fn get_historic_events(start: u32, end: u32) -> Vec<DeriskEvent> {
+pub fn get_historic_events(network: StellarNetwork, start: u32, end: u32) -> Vec<DeriskEvent> {
+    let config_network = match network {
+        StellarNetwork::Futurenet => SupportedNetwork::Futurenet,
+        StellarNetwork::Testnet => SupportedNetwork::Testnet,
+        StellarNetwork::Mainnet => SupportedNetwork::Pubnet,
+    };
+
     let config = IngestionConfig {
         executable_path: "/usr/local/bin/stellar-core".to_string(),
         context_path: Default::default(),
-        network: SupportedNetwork::Futurenet,
+        network: config_network,
         bounded_buffer_size: None,
         staggered: None,
     };

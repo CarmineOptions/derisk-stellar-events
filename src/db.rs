@@ -20,6 +20,7 @@ impl DatabaseConnector {
 
         DatabaseConnector::new(username, password, host, port, network)
     }
+
     pub fn new(
         username: String,
         password: String,
@@ -27,18 +28,9 @@ impl DatabaseConnector {
         port: String,
         network: StellarNetwork,
     ) -> Self {
-        let db_name = match network {
-            StellarNetwork::Futurenet => "stellar-futurenet",
-            StellarNetwork::Testnet => {
-                panic!("Testnet not implemented yet")
-            }
-            StellarNetwork::Mainnet => {
-                panic!("Mainnet not implemented yet")
-            }
-        };
         let connection_string = format!(
             "postgres://{}:{}@{}:{}/{}",
-            username, password, host, port, db_name
+            username, password, host, port, network
         );
         let connection = PgConnection::establish(&connection_string)
             .unwrap_or_else(|_| panic!("Error connecting to {}", connection_string));
