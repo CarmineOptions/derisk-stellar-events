@@ -18,7 +18,11 @@ pub fn stream_events(mut db_connector: DatabaseConnector) {
 
     let receiver = captive_core.start_online_no_range().unwrap();
 
-    println!("Starting capturing events");
+    let mut event_count = 0;
+    let mut loop_count = 0;
+    let loop_count_reset = 100;
+
+    println!("Capturing events...");
     for result in receiver.iter() {
         let ledger_sequence = LedgerCloseMetaReader::ledegr_sequence(&result).unwrap();
         let events: Vec<DeriskEvent> = LedgerCloseMetaReader::soroban_events(&result)
@@ -28,12 +32,17 @@ pub fn stream_events(mut db_connector: DatabaseConnector) {
             .enumerate()
             .filter_map(|(index, event)| construct_derisk_event(event, ledger_sequence, index))
             .collect();
-        println!(
-            "Found {} relevant events in ledger {}",
-            &events.len(),
-            ledger_sequence
-        );
+
+        event_count += events.len();
+        loop_count += 1;
 
         db_connector.create_batch_of_events(&events);
+
+        // report found events
+        if loop_count >= loop_count_reset {
+            println!("{} events in the last {} ledgers", event_count, loop_count);
+            event_count = 0;
+            loop_count = 0;
+        }
     }
 }

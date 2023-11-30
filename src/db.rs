@@ -2,7 +2,7 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use std::env;
 
-use crate::core::{DeriskEvent, StellarNetwork};
+use crate::core::{DatabaseStellarXPool, DeriskEvent, StellarNetwork};
 
 const BATCH_SIZE: usize = 500;
 pub struct DatabaseConnector {
@@ -53,6 +53,24 @@ impl DatabaseConnector {
                 .on_conflict_do_nothing()
                 .execute(&mut self.connection)
                 .expect("Error saving batch of events");
+        }
+    }
+
+    pub fn create_stellarx_pools(&mut self, pools: &Vec<DatabaseStellarXPool>) {
+        use crate::schema::stellarx_pools::dsl::*;
+
+        if !matches!(self.network, StellarNetwork::Mainnet) {
+            panic!("Cannot save StellarX pools to other database then Mainnet!");
+        }
+
+        let chunks = pools.chunks(self.bastch_size);
+
+        for chunk in chunks {
+            diesel::insert_into(stellarx_pools)
+                .values(chunk)
+                .on_conflict_do_nothing()
+                .execute(&mut self.connection)
+                .expect("Error saving batch of StellarX pools");
         }
     }
 }

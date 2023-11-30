@@ -36,6 +36,9 @@ RUN apt-get -y install git build-essential pkg-config autoconf automake libtool 
 RUN apt-get -y install libstdc++-10-dev
 
 WORKDIR /app
-COPY --from=Builder /build/target/release/historic_events .
-COPY --from=Builder /build/target/release/stream_events .
+
+# copy all the binaries to the top level
+COPY --from=Builder /build/target/release/* .
+
+# copy stellar-core binary into $PATH
 COPY --from=StellarCore /usr/local/bin/stellar-core /usr/local/bin/

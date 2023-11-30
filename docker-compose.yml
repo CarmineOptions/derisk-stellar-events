@@ -14,3 +14,10 @@ services:
     env_file:
       - .env
     command: [ "./stream_events" ]
+
+  pool_data:
+    build: .
+    platform: linux/arm64
+    env_file:
+      - .env
+    command: [ "./pool_data" ]

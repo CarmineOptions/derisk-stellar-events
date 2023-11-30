@@ -1,10 +1,13 @@
 use std::fmt;
 
 use crate::schema::events;
+use crate::schema::stellarx_pools;
+
 use diesel::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 
+use serde_json::Value;
 use stellar_xdr::next::{ContractEvent, ContractEventBody};
 
 pub enum StellarNetwork {
@@ -67,13 +70,15 @@ pub fn construct_derisk_event(
 
 // StellarX pools
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+pub struct PoolResponse {
+    pub pools: Vec<StellarXPool>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StellarXPool {
     pub id: String,
     #[serde(rename = "type")]
     pub type_field: String,
-    #[serde(rename = "_links")]
-    pub links: Links,
     #[serde(rename = "fee_bp")]
     pub fee_bp: i64,
     pub reserves: Vec<Resef>,
@@ -87,23 +92,62 @@ pub struct StellarXPool {
     pub last_modified_time: String,
     #[serde(rename = "last_modified_ledger")]
     pub last_modified_ledger: i64,
-    pub liquidity: f64,
+    pub liquidity: Option<f64>,
     #[serde(rename = "volume_24h")]
-    pub volume_24h: f64,
+    pub volume_24h: Option<f64>,
     #[serde(rename = "volume_7d")]
-    pub volume_7d: f64,
+    pub volume_7d: Option<f64>,
     #[serde(rename = "fee_24h")]
-    pub fee_24h: f64,
+    pub fee_24h: Option<f64>,
     #[serde(rename = "fee_1y")]
-    pub fee_1y: f64,
+    pub fee_1y: Option<f64>,
     #[serde(rename = "fee_aqua")]
-    pub fee_aqua: f64,
+    pub fee_aqua: Option<f64>,
     #[serde(rename = "assets_order")]
     pub assets_order: String,
     #[serde(rename = "asset_1_domain")]
     pub asset_1_domain: String,
     #[serde(rename = "asset_2_domain")]
     pub asset_2_domain: String,
+}
+
+#[derive(Default, Debug, Clone, Queryable, Insertable, PartialEq, Serialize, Deserialize)]
+#[diesel(table_name = stellarx_pools)]
+pub struct DatabaseStellarXPool {
+    pub id: String,
+    #[serde(rename = "type")]
+    pub type_field: String,
+    #[serde(rename = "fee_bp")]
+    pub fee_bp: i64,
+    #[serde(rename = "paging_token")]
+    pub paging_token: String,
+    #[serde(rename = "total_shares")]
+    pub total_shares: String,
+    #[serde(rename = "total_trustlines")]
+    pub total_trustlines: String,
+    #[serde(rename = "last_modified_time")]
+    pub last_modified_time: String,
+    #[serde(rename = "last_modified_ledger")]
+    pub last_modified_ledger: i64,
+    pub liquidity: Option<f64>,
+    #[serde(rename = "volume_24h")]
+    pub volume_24h: Option<f64>,
+    #[serde(rename = "volume_7d")]
+    pub volume_7d: Option<f64>,
+    #[serde(rename = "fee_24h")]
+    pub fee_24h: Option<f64>,
+    #[serde(rename = "fee_1y")]
+    pub fee_1y: Option<f64>,
+    #[serde(rename = "fee_aqua")]
+    pub fee_aqua: Option<f64>,
+    #[serde(rename = "assets_order")]
+    pub assets_order: String,
+    #[serde(rename = "asset_1_domain")]
+    pub asset_1_domain: String,
+    #[serde(rename = "asset_2_domain")]
+    pub asset_2_domain: String,
+    pub asset_1: Option<Value>,
+    pub asset_2: Option<Value>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
